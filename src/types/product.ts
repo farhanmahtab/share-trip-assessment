@@ -21,4 +21,5 @@ export interface FetchProductsParams {
   limit?: number;
   category?: string;
   search?: string;
+  signal?: AbortSignal;
 }

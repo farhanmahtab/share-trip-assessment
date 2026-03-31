@@ -22,25 +22,48 @@ export const useProducts = (initialParams: FetchProductsParams = {}): UseProduct
   const [total, setTotal] = useState(0);
   
   const currentParams = useRef<FetchProductsParams>(initialParams);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const retryTimeoutRef = useRef<number | null>(null);
 
   const fetchProductsData = useCallback(async (params: FetchProductsParams = {}, retryCount = 0) => {
+    
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsLoading(true);
     setError(null);
     currentParams.current = { ...currentParams.current, ...params };
 
     try {
-      const response = await api.fetchProducts(currentParams.current);
+      const response = await api.fetchProducts({
+        ...currentParams.current,
+        signal: controller.signal
+      });
+      
       setProducts(response.data);
       setPage(response.page);
       setTotalPages(response.totalPages);
       setTotal(response.total);
       setIsLoading(false);
     } catch (err: any) {
+      if (err.message === 'Aborted') {
+        return;
+      }
+
       if (retryCount < 2) {
-        // Linear backoff: 1s, 2s
         const backoff = (retryCount + 1) * 1000;
         console.warn(`Fetch failed, retrying in ${backoff}ms... (Attempt ${retryCount + 1})`);
-        setTimeout(() => fetchProductsData(params, retryCount + 1), backoff);
+        
+        retryTimeoutRef.current = window.setTimeout(() => {
+          fetchProductsData(params, retryCount + 1);
+        }, backoff);
       } else {
         setError(err.message || 'An unexpected error occurred');
         setIsLoading(false);
@@ -50,6 +73,15 @@ export const useProducts = (initialParams: FetchProductsParams = {}): UseProduct
 
   useEffect(() => {
     fetchProductsData(initialParams);
+    
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
   }, []);
 
   const retry = useCallback(() => {

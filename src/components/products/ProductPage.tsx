@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useProducts } from '../../hooks/useProducts';
+import { useDebounce } from '../../hooks/useDebounce';
 import Header from '../layout/Header';
 import ProductFilters from './ProductFilters';
 import ProductGrid from './ProductGrid';
@@ -8,6 +9,8 @@ import Pagination from './Pagination';
 const ProductPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 200);
+  const isFirstRender = useRef(true);
   
   const { 
     products, 
@@ -20,19 +23,26 @@ const ProductPage: React.FC = () => {
     retry 
   } = useProducts({ limit: 12 });
 
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    
+    fetchProducts({ search: debouncedSearchTerm, page: 1, category });
+  }, [debouncedSearchTerm, category, fetchProducts]);
+
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    fetchProducts({ search: value, page: 1, category });
   };
 
   const handleCategoryChange = (value: string) => {
     setCategory(value);
-    fetchProducts({ category: value, page: 1, search: searchTerm });
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      fetchProducts({ page: newPage, category, search: searchTerm });
+      fetchProducts({ page: newPage, category, search: debouncedSearchTerm });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };

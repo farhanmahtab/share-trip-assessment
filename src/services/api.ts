@@ -17,11 +17,21 @@ export const api = {
    * WARNING: This API is intentionally flaky and slow!
    */
   fetchProducts: async (params: FetchProductsParams = {}): Promise<PaginatedResponse<Product>> => {
-    const { page = 1, limit = 12, category, search } = params;
+    const { page = 1, limit = 12, category, search, signal } = params;
 
-    // 1. Simulate network delay (500ms - 2500ms)
+    // 1. Simulate network delay (500ms - 2500ms) with AbortSignal support
     const delay = Math.floor(Math.random() * 2000) + 500;
-    await new Promise(resolve => setTimeout(resolve, delay));
+    
+    await new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(resolve, delay);
+      
+      if (signal) {
+        signal.addEventListener('abort', () => {
+          clearTimeout(timeoutId);
+          reject(new Error('Aborted'));
+        });
+      }
+    });
 
     // 2. Simulate probabilistic failure (20% chance)
     if (Math.random() < 0.2) {
