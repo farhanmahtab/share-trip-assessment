@@ -27,7 +27,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           placeholder="Search products..." 
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="bg-transparent border-none text-white outline-none w-full text-lg placeholder:text-gray-500"
+          className="bg-transparent border-none text-[#0f172a] outline-none w-full text-lg placeholder:text-gray-500"
         />
       </div>
       
@@ -35,13 +35,13 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
         <select 
           value={category}
           onChange={(e) => onCategoryChange(e.target.value)}
-          className="glass-panel appearance-none px-6 py-3 pr-10 text-white outline-none cursor-pointer rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-lg"
+          className="glass-panel appearance-none px-6 py-3 pr-10 text-[#0f172a] outline-none cursor-pointer rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-lg font-medium"
         >
-          <option value="" className="bg-[#1a1a1a]">All Categories</option>
-          <option value="electronics" className="bg-[#1a1a1a]">Electronics</option>
-          <option value="clothing" className="bg-[#1a1a1a]">Clothing</option>
-          <option value="home" className="bg-[#1a1a1a]">Home</option>
-          <option value="outdoors" className="bg-[#1a1a1a]">Outdoors</option>
+          <option value="" className="bg-white">All Categories</option>
+          <option value="electronics" className="bg-white">Electronics</option>
+          <option value="clothing" className="bg-white">Clothing</option>
+          <option value="home" className="bg-white">Home</option>
+          <option value="outdoors" className="bg-white">Outdoors</option>
         </select>
         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
           <ChevronRight size={18} className="rotate-90" />

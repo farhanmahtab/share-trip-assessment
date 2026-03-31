@@ -16,7 +16,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({ message, onRetry }) => {
       className="flex flex-col items-center justify-center p-12 glass-panel rounded-2xl border-red-500/20 bg-red-500/5"
     >
       <AlertCircle size={64} className="text-red-500 mb-4" />
-      <h2 className="text-2xl font-semibold text-white mb-2">Oops! Something went wrong</h2>
+      <h2 className="text-2xl font-semibold text-[#0f172a] mb-2">Oops! Something went wrong</h2>
       <p className="text-gray-400 text-center max-w-md mb-6">
         {message}
       </p>

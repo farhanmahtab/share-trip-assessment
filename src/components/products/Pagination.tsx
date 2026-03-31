@@ -43,7 +43,7 @@ const Pagination: React.FC<PaginationProps> = ({
               disabled={isLoading}
               className={`w-12 h-12 flex items-center justify-center rounded-xl font-semibold transition-all ${
                 currentPage === pageNum 
-                  ? 'bg-primary text-white/3 shadow-lg shadow-primary/20 scale-110' 
+                  ? 'bg-primary text-white/4 shadow-lg shadow-primary/20 scale-110' 
                   : 'glass-panel border border-white/10 bg-white/5 hover:bg-white/10 text-gray-400'
               }`}
             >
