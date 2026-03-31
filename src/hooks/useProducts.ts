@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../services/api';
+import { productCache } from '../services/cache';
 import type { Product, FetchProductsParams } from '../types/product';
 
 interface UseProductsResult {
@@ -26,7 +27,22 @@ export const useProducts = (initialParams: FetchProductsParams = {}): UseProduct
   const retryTimeoutRef = useRef<number | null>(null);
 
   const fetchProductsData = useCallback(async (params: FetchProductsParams = {}, retryCount = 0) => {
-    
+    const updatedParams = { ...currentParams.current, ...params };
+    currentParams.current = updatedParams;
+
+    const cacheKey = productCache.generateKey(updatedParams);
+    const cachedData = productCache.get(cacheKey);
+
+    if (cachedData && retryCount === 0) {
+      setProducts(cachedData.data);
+      setPage(cachedData.page);
+      setTotalPages(cachedData.totalPages);
+      setTotal(cachedData.total);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -39,14 +55,15 @@ export const useProducts = (initialParams: FetchProductsParams = {}): UseProduct
 
     setIsLoading(true);
     setError(null);
-    currentParams.current = { ...currentParams.current, ...params };
 
     try {
       const response = await api.fetchProducts({
-        ...currentParams.current,
+        ...updatedParams,
         signal: controller.signal
       });
       
+      productCache.set(cacheKey, response);
+
       setProducts(response.data);
       setPage(response.page);
       setTotalPages(response.totalPages);
@@ -59,8 +76,6 @@ export const useProducts = (initialParams: FetchProductsParams = {}): UseProduct
 
       if (retryCount < 2) {
         const backoff = (retryCount + 1) * 1000;
-        console.warn(`Fetch failed, retrying in ${backoff}ms... (Attempt ${retryCount + 1})`);
-        
         retryTimeoutRef.current = window.setTimeout(() => {
           fetchProductsData(params, retryCount + 1);
         }, backoff);
